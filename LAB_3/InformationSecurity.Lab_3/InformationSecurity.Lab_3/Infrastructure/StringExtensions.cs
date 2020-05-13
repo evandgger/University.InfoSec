@@ -50,5 +50,35 @@ namespace InformationSecurity.Lab_3.Infrastructure
 
             return result;
         }
+
+        public static List<List<int>> CutByteArrayIntoBlocks(this List<byte> source)
+        {
+            var result = new List<List<int>>();
+
+            var byteBlocks = new List<List<byte>>();
+            var countOfByteBlocks = source.Count / 8;
+
+            for (var i = 0; i < countOfByteBlocks; i++)
+            {
+                byteBlocks.Add(source.Skip(i*8).Take(8).ToList());
+            }
+
+            var bitBlocks = new List<BitArray>();
+            bitBlocks.AddRange(byteBlocks.Select(item => new BitArray(item.ToArray())));
+
+            foreach (var bitBlock in bitBlocks)
+            {
+                var newBlock = new List<int>();
+
+                foreach (bool bit in bitBlock)
+                {
+                    newBlock.Add(bit ? 1 : 0);
+                }
+
+                result.Add(newBlock);
+            }
+
+            return result;
+        }
     }
 }

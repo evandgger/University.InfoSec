@@ -93,7 +93,11 @@ namespace InformationSecurity.Lab_3.DES
             var resultString = Encoding.UTF8.GetString(resultByteArray);
 
             Console.OutputEncoding = Encoding.UTF8;
-            Console.WriteLine($"Encrypted text is {resultString}");
+            Console.WriteLine($"Encrypted bytes are: ");
+            foreach (var resultByte in resultByteArray)
+            {
+                Console.Write($"{resultByte} ");
+            }
             File.WriteAllText("C:/temp/result.txt", $"Result bit set is {string.Join("", merged)}\nEncrypted text is {resultString}");
         }
 
@@ -104,7 +108,7 @@ namespace InformationSecurity.Lab_3.DES
             return ret;
         }
 
-        private List<List<int>> DESDecrypt(List<string> blocks, string key)
+        private List<List<int>> DESDecrypt(List<List<int>> blocks, string key)
         {
             var result = new List<List<int>>();
 
@@ -115,8 +119,7 @@ namespace InformationSecurity.Lab_3.DES
 
             foreach (var block in blocks)
             {
-                var blockBitArray = block.ToBitArray(Encoding.UTF8); // взять биты для блока из 64 бит
-                blockBitArray = StartPermutation(blockBitArray); // перестановка IP
+                var blockBitArray = StartPermutation(block); // перестановка IP
 
                 var LI = new List<List<int>> { blockBitArray.Take(32).ToList() };
                 var RI = new List<List<int>> { blockBitArray.Skip(32).Take(32).ToList() };
@@ -125,7 +128,7 @@ namespace InformationSecurity.Lab_3.DES
                 {
                     var keyAtIteration = GetKeyAtDecryptIteration(i, C0, D0); // взять k[i]
 
-                    RI.Add(LI[i - 1]); // L[i] = R[i - 1]
+                    RI.Add(LI[i - 1]); // R[i] = LI[i - 1]
 
                     var FI = F(LI[i - 1], keyAtIteration); // результат работы F
 
@@ -378,10 +381,12 @@ namespace InformationSecurity.Lab_3.DES
 
         private void Decrypt(string text, string key)
         {
-            text = text.RoundTo64Blocks();
+            var stringBytes = text.Split(' ');
+            var byteArray = stringBytes.Select(stringByte => Convert.ToByte(stringByte)).ToList();
+
             key = key.PrepareKey();
 
-            var blocks = text.CutStringIntoBlocks();
+            var blocks = byteArray.CutByteArrayIntoBlocks();
 
             var cryptResult = DESDecrypt(blocks, key);
             var merged = new List<int>();
